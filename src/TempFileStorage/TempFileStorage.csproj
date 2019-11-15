@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>David Vercruyssen</Authors>
+    <Company>Aranea</Company>
+    <PackageProjectUrl>https://github.com/davidcruy/temp-file-storage</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/davidcruy/temp-file-storage.git</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

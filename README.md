@@ -16,3 +16,21 @@ You should install [TempFileStorage with NuGet](https://www.nuget.org/packages/T
 Or via the .NET Core command line interface:
 
     dotnet add package TempFileStorage
+
+### Usage
+
+Add the following service to the container:
+
+```
+services.AddSingleton<ITempFileStorage, TempFileMemoryStorage>();
+```
+
+Register the Middleware in your Startup.cs to activate the request-middleware:
+
+```
+app.UseTempFiles(builder =>
+{
+    builder.Options.UploadFilePath = "/upload-file";
+    builder.Options.DownloadFilePath = "/download-file";
+});
+```

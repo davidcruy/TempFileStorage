@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TempFileStorage
 {
@@ -14,9 +15,9 @@ namespace TempFileStorage
             _files = new Dictionary<string, TempFile>();
         }
 
-        public string StoreFile(string filename, Stream contentStream) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30));
+        public Task<string> StoreFile(string filename, Stream contentStream) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30));
 
-        public string StoreFile(string filename, Stream contentStream, TimeSpan timeout)
+        public Task<string> StoreFile(string filename, Stream contentStream, TimeSpan timeout)
         {
             var memStream = new MemoryStream();
             contentStream.Seek(0, SeekOrigin.Begin);
@@ -27,9 +28,9 @@ namespace TempFileStorage
             return StoreFile(filename, content, timeout);
         }
 
-        public string StoreFile(string filename, byte[] content) => StoreFile(filename, content, TimeSpan.FromMinutes(30));
+        public Task<string> StoreFile(string filename, byte[] content) => StoreFile(filename, content, TimeSpan.FromMinutes(30));
 
-        public string StoreFile(string filename, byte[] content, TimeSpan timeout)
+        public Task<string> StoreFile(string filename, byte[] content, TimeSpan timeout)
         {
             var file = new TempFile
             {
@@ -40,30 +41,30 @@ namespace TempFileStorage
 
             _files.Add(file.Key, file);
 
-            return file.Key;
+            return Task.FromResult(file.Key);
         }
 
-        public bool TryGetFile(string key, out string filename, out byte[] content)
+        public Task<bool> TryGetFile(string key, out string filename, out byte[] content)
         {
             if (_files.TryGetValue(key, out var tempFile))
             {
                 filename = tempFile.Filename;
                 content = tempFile.Content;
 
-                return true;
+                return Task.FromResult(true);
             }
 
             filename = null;
             content = null;
 
-            return false;
+            return Task.FromResult(false);
         }
 
-        public TempFile GetStoredFile(string key)
+        public Task<TempFile> GetStoredFile(string key)
         {
             var theFile = _files.FirstOrDefault(x => x.Key == key).Value;
 
-            return theFile;
+            return Task.FromResult(theFile);
         }
     }
 }

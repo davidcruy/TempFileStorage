@@ -6,12 +6,11 @@ namespace TempFileStorage
 {
     public interface ITempFileStorage
     {
-        Task<string> StoreFile(string filename, Stream contentStream);
-        Task<string> StoreFile(string filename, Stream contentStream, TimeSpan timeout);
-        Task<string> StoreFile(string filename, byte[] content);
-        Task<string> StoreFile(string filename, byte[] content, TimeSpan timeout);
+        Task<TempFile> StoreFile(string filename, Stream contentStream);
+        Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout);
 
-        Task<TempFile> GetStoredFile(string key);
-        Task<bool> TryGetFile(string key, out string filename, out byte[] content);
+        Task<bool> ContainsKey(string key);
+        Task<TempFile> GetFileInfo(string key);
+        Task<byte[]> Download(string key);
     }
 }

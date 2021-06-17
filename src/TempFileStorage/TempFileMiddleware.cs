@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -28,11 +27,13 @@ namespace TempFileStorage
 
             if (context.Request.Path.StartsWithSegments(downloadPath) && context.Request.Method.Equals("GET"))
             {
-                if (context.Request.Query.TryGetValue("key", out var fileKeys)
-                    && await storage.TryGetFile(fileKeys[0], out var filename, out byte[] content))
+                if (context.Request.Query.TryGetValue("key", out var fileKeys) && await storage.ContainsKey(fileKeys[0]))
                 {
+                    var fileInfo = await storage.GetFileInfo(fileKeys[0]);
+                    var content = await storage.Download(fileKeys[0]);
+
                     context.Response.ContentType = "application/octet-stream";
-                    context.Response.Headers.Add("content-disposition", new[] { $"attachment;filename=\"{filename}\"" });
+                    context.Response.Headers.Add("content-disposition", new[] { $"attachment;filename=\"{fileInfo.Filename}\"" });
                     context.Response.ContentLength = content.Length;
 
                     await context.Response.Body.WriteAsync(content);
@@ -64,26 +65,13 @@ namespace TempFileStorage
                     if (fileSection != null)
                     {
                         var fileName = fileSection.FileName;
-                        byte[] fileContent;
-                        long fileSize;
-
-                        await using (var memoryStream = new MemoryStream())
-                        {
-                            await fileSection.FileStream.CopyToAsync(memoryStream);
-
-                            memoryStream.Position = 0;
-
-                            fileSize = memoryStream.Length;
-                            fileContent = memoryStream.ToArray();
-                        }
-
-                        var key = await storage.StoreFile(fileName, fileContent);
+                        var tempFile = await storage.StoreFile(fileName, fileSection.FileStream);
 
                         files.Add(new FileInfo
                         {
                             FileName = fileName,
-                            FileSize = fileSize,
-                            Key = key
+                            FileSize = tempFile.FileSize,
+                            Key = tempFile.Key
                         });
                     }
 

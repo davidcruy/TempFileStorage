@@ -34,3 +34,15 @@ app.UseTempFiles(builder =>
     builder.Options.DownloadFilePath = "/download-file";
 });
 ```
+
+### SqlServer
+
+Install the package [TempFileStorage.SqlServer with NuGet](https://www.nuget.org/packages/TempFileStorage.SqlServer):
+
+Run the SQL-script `install.sql` on your DB-server.
+
+Swap the TempFileMemoryStorage with `TempFileSqlStorage`
+
+```
+services.AddSingleton<ITempFileStorage>(c => new TempFileSqlStorage(Configuration.GetConnectionString("Database")));
+```

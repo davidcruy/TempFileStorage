@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempFileStorage", "TempFileStorage.csproj", "{B2DB58C3-5F1D-49EE-A014-FFCDBF8A7F00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TempFileStorage", "TempFileStorage.csproj", "{B2DB58C3-5F1D-49EE-A014-FFCDBF8A7F00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempFileStorage.SqlServer", "..\TempFileStorage.SqlServer\TempFileStorage.SqlServer.csproj", "{254B7172-C6EA-477B-907F-C2558847462D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{B2DB58C3-5F1D-49EE-A014-FFCDBF8A7F00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2DB58C3-5F1D-49EE-A014-FFCDBF8A7F00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2DB58C3-5F1D-49EE-A014-FFCDBF8A7F00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{254B7172-C6EA-477B-907F-C2558847462D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{254B7172-C6EA-477B-907F-C2558847462D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{254B7172-C6EA-477B-907F-C2558847462D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{254B7172-C6EA-477B-907F-C2558847462D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

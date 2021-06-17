@@ -4,25 +4,18 @@ namespace TempFileStorage
 {
     public class TempFile
     {
-        private const string Characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        private static readonly Random random = new Random(DateTime.Now.Millisecond);
-
-        public TempFile()
+        public TempFile() : this(TempFileKeyGenerator.Generate())
         {
-            var key = "";
+        }
 
-            for (var i = 0; i < 10; i++)
-            {
-                var rnd = random.Next(0, Characters.Length);
-                key += Characters[rnd];
-            }
-
+        public TempFile(string key)
+        {
             Key = key;
         }
 
         public string Key { get; }
         public string Filename { get; set; }
-        public byte[] Content { get; set; }
+        public long FileSize { get; set; }
         public DateTime CacheTimeout { get; set; }
     }
 }

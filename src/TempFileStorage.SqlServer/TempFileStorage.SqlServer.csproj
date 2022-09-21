@@ -1,37 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <PackageId>TempFileStorage.SqlServer</PackageId>
-    <Version>3.0.0</Version>
-    <Authors>David Vercruyssen</Authors>
-    <Company>Aranea</Company>
-    <PackageProjectUrl>https://github.com/davidcruy/temp-file-storage</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/davidcruy/temp-file-storage.git</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>
-    <RootNamespace>TempFileStorage.SqlServer</RootNamespace>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>10</LangVersion>
+        <Nullable>disable</Nullable>
+        <PackageId>TempFileStorage.SqlServer</PackageId>
+        <Version>3.1.0</Version>
+        <Authors>David Vercruyssen</Authors>
+        <Company>Aranea</Company>
+        <PackageProjectUrl>https://github.com/davidcruy/TempFileStorage</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/davidcruy/TempFileStorage.git</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 
-  <ItemGroup>
-    <None Remove="install.sql" />
-  </ItemGroup>
+        <RepositoryType>Git</RepositoryType>
+        <RootNamespace>TempFileStorage.SqlServer</RootNamespace>
 
-  <ItemGroup>
-    <EmbeddedResource Include="install.sql" />
-  </ItemGroup>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="install.sql" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
-    <PackageReference Include="TempFileStorage" Version="3.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="install.sql" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="" Visible="false" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="false" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
+        <PackageReference Include="TempFileStorage" Version="3.1.0" />
+    </ItemGroup>
 
 </Project>

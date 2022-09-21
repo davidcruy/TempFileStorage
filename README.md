@@ -21,17 +21,19 @@ Or via the .NET Core command line interface:
 
 Add the following service to the container:
 
-```
+```C#
 services.AddSingleton<ITempFileStorage, TempFileMemoryStorage>();
 ```
 
 Register the Middleware in your Startup.cs to activate the request-middleware:
 
-```
-app.UseTempFiles(builder =>
+```C#
+app.UseEndpoints(endpoints =>
 {
-    builder.Options.UploadFilePath = "/upload-file";
-    builder.Options.DownloadFilePath = "/download-file";
+    endpoints.MapTempFileStorage(
+        downloadPattern: "/download-file",
+        uploadPattern: "/upload-file"
+    );
 });
 ```
 
@@ -43,6 +45,6 @@ Run the SQL-script `install.sql` on your DB-server.
 
 Swap the TempFileMemoryStorage with `TempFileSqlStorage`
 
-```
+```C#
 services.AddSingleton<ITempFileStorage>(c => new TempFileSqlStorage(Configuration.GetConnectionString("Database")));
 ```

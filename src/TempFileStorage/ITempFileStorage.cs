@@ -1,16 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
+﻿namespace TempFileStorage;
 
-namespace TempFileStorage
+public interface ITempFileStorage
 {
-    public interface ITempFileStorage
-    {
-        Task<TempFile> StoreFile(string filename, Stream contentStream);
-        Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout);
+    Task<TempFile> StoreFile(string filename, byte[] content);
+    Task<TempFile> StoreFile(string filename, Stream contentStream);
+    Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout);
 
-        Task<bool> ContainsKey(string key);
-        Task<TempFile> GetFileInfo(string key);
-        Task<byte[]> Download(string key);
-    }
+    Task<bool> ContainsKey(string key);
+    Task<TempFile> GetFileInfo(string key);
+    Task<byte[]> Download(string key);
 }

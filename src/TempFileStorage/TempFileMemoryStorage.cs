@@ -1,55 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+﻿namespace TempFileStorage;
 
-namespace TempFileStorage
+public class TempFileMemoryStorage : ITempFileStorage
 {
-    public class TempFileMemoryStorage : ITempFileStorage
+    private readonly IDictionary<string, (TempFile FileInfo, byte[] Content)> _files;
+
+    public TempFileMemoryStorage()
     {
-        private readonly IDictionary<string, (TempFile FileInfo, byte[] Content)> _files;
+        _files = new Dictionary<string, (TempFile, byte[])>();
+    }
 
-        public TempFileMemoryStorage()
+    public Task<TempFile> StoreFile(string filename, byte[] content)
+    {
+        return StoreFile(filename, new MemoryStream(content));
+    }
+
+    public Task<TempFile> StoreFile(string filename, Stream contentStream) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30));
+
+    public async Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout)
+    {
+        var memStream = new MemoryStream();
+        await contentStream.CopyToAsync(memStream);
+
+        var content = memStream.ToArray();
+        var fileSize = content.Length;
+
+        var file = new TempFile
         {
-            _files = new Dictionary<string, (TempFile, byte[])>();
-        }
+            Filename = filename,
+            FileSize = fileSize,
+            CacheTimeout = DateTime.Now.Add(timeout)
+        };
 
-        public Task<TempFile> StoreFile(string filename, Stream contentStream) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30));
+        _files.Add(file.Key, (file, content));
 
-        public async Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout)
-        {
-            var memStream = new MemoryStream();
-            await contentStream.CopyToAsync(memStream);
+        return file;
+    }
 
-            var content = memStream.ToArray();
-            var fileSize = content.Length;
+    public Task<bool> ContainsKey(string key) => Task.FromResult(_files.ContainsKey(key));
 
-            var file = new TempFile
-            {
-                Filename = filename,
-                FileSize = fileSize,
-                CacheTimeout = DateTime.Now.Add(timeout)
-            };
+    public Task<TempFile> GetFileInfo(string key)
+    {
+        var fileInfo = _files.TryGetValue(key, out var storedFile)
+            ? storedFile.FileInfo
+            : null;
 
-            _files.Add(file.Key, (file, content));
+        return Task.FromResult(fileInfo);
+    }
 
-            return file;
-        }
-
-        public Task<bool> ContainsKey(string key) => Task.FromResult(_files.ContainsKey(key));
-
-        public Task<TempFile> GetFileInfo(string key)
-        {
-            var fileInfo = _files.TryGetValue(key, out var storedFile)
-                ? storedFile.FileInfo
-                : null;
-
-            return Task.FromResult(fileInfo);
-        }
-
-        public Task<byte[]> Download(string key)
-        {
-            return Task.FromResult(_files[key].Content);
-        }
+    public Task<byte[]> Download(string key)
+    {
+        return Task.FromResult(_files[key].Content);
     }
 }

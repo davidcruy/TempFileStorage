@@ -6,7 +6,7 @@
         <LangVersion>10</LangVersion>
         <Nullable>disable</Nullable>
         <PackageId>TempFileStorage.SqlServer</PackageId>
-        <Version>3.1.0</Version>
+        <Version>3.1.1</Version>
         <Authors>David Vercruyssen</Authors>
         <Company>Aranea</Company>
         <PackageProjectUrl>https://github.com/davidcruy/TempFileStorage</PackageProjectUrl>
@@ -37,7 +37,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
-        <PackageReference Include="TempFileStorage" Version="3.1.0" />
+        <PackageReference Include="TempFileStorage" Version="3.1.1" />
     </ItemGroup>
 
 </Project>

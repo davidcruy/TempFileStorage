@@ -16,11 +16,11 @@ public static class MiddlewareExtensions
         return builder
             .Map(customBuilder.Options.DownloadFilePattern, applicationBuilder =>
             {
-                applicationBuilder.UseMiddleware<TempFileDownloadMiddleware>(Options.Create(customBuilder.Options));
+                applicationBuilder.UseMiddleware<TempFileDownloadMiddleware>();
             })
             .Map(customBuilder.Options.UploadFilePattern, applicationBuilder =>
             {
-                applicationBuilder.UseMiddleware<TempFileUploadMiddleware>(Options.Create(customBuilder.Options));
+                applicationBuilder.UseMiddleware<TempFileUploadMiddleware>();
             });
     }
 }

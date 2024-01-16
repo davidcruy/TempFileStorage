@@ -36,7 +36,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="3.1.5" />
         <PackageReference Include="TempFileStorage" Version="3.1.1" />
     </ItemGroup>
 

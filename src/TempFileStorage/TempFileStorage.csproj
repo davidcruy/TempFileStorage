@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;netcoreapp3.1;net8.0</TargetFrameworks>
+        <TargetFrameworks>netcoreapp3.1;net6.0;net8.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
-        <LangVersion>10</LangVersion>
+        <LangVersion>default</LangVersion>
         <Nullable>disable</Nullable>
         <PackageId>TempFileStorage</PackageId>
-        <Version>3.1.1</Version>
+        <Version>3.1.2</Version>
         <Authors>David Vercruyssen</Authors>
         <Company>Aranea</Company>
         <PackageProjectUrl>https://github.com/davidcruy/TempFileStorage</PackageProjectUrl>

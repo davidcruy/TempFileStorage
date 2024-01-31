@@ -60,7 +60,7 @@ public class TempFileSqlStorage : ITempFileStorage
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        await using var cmd = new SqlCommand("SELECT 1 FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout", connection);
+        await using var cmd = new SqlCommand("SELECT COUNT(*) FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout", connection);
         cmd.Parameters.AddWithValue("key", key);
         cmd.Parameters.AddWithValue("timeout", DateTime.Now);
 
@@ -68,7 +68,7 @@ public class TempFileSqlStorage : ITempFileStorage
 
         await CleanupStorage(connection);
 
-        return count == 1;
+        return count is 1;
     }
 
     public async Task<TempFile> GetFileInfo(string key)

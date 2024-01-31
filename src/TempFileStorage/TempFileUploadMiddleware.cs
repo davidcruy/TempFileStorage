@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 
 namespace TempFileStorage;
 

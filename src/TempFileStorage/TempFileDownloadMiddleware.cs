@@ -1,8 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text.Json;
-using Microsoft.Extensions.Options;
 
 namespace TempFileStorage;
 
@@ -19,11 +15,15 @@ public class TempFileDownloadMiddleware
     {
         if (context.Request.Method.Equals("GET"))
         {
-            if (!context.Request.Query.TryGetValue("key", out var fileKeys) || !await storage.ContainsKey(fileKeys[0]))
+            if (!context.Request.Query.TryGetValue("key", out var fileKeys))
             {
-                throw new Exception("TempFileStorage download key is required.");
+                throw new ArgumentException("TempFileStorage download key is required.");
             }
-
+            if (!await storage.ContainsKey(fileKeys[0]))
+            {
+                throw new InvalidOperationException("TempFileStorage download key is invalid.");
+            }
+            
             var fileInfo = await storage.GetFileInfo(fileKeys[0]);
             var content = await storage.Download(fileKeys[0]);
 

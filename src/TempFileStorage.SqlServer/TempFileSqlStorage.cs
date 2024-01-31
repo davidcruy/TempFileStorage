@@ -1,7 +1,4 @@
-﻿using System;
-using System.Data;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Data;
 using Microsoft.Data.SqlClient;
 
 namespace TempFileStorage.SqlServer;
@@ -67,7 +64,7 @@ public class TempFileSqlStorage : ITempFileStorage
         cmd.Parameters.AddWithValue("key", key);
         cmd.Parameters.AddWithValue("timeout", DateTime.Now);
 
-        var count = (int)await cmd.ExecuteScalarAsync();
+        var count = (int?) await cmd.ExecuteScalarAsync();
 
         await CleanupStorage(connection);
 

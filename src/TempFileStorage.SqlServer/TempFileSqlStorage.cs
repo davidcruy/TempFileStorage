@@ -3,23 +3,16 @@ using Microsoft.Data.SqlClient;
 
 namespace TempFileStorage.SqlServer;
 
-public class TempFileSqlStorage : ITempFileStorage
+public class TempFileSqlStorage(string connectionString) : ITempFileStorage
 {
-    private readonly string _connectionString;
-
-    public TempFileSqlStorage(string connectionString)
+    public Task<TempFile> StoreFile(string filename, byte[] content, bool isUpload = false)
     {
-        _connectionString = connectionString;
+        return StoreFile(filename, new MemoryStream(content), isUpload);
     }
 
-    public Task<TempFile> StoreFile(string filename, byte[] content)
-    {
-        return StoreFile(filename, new MemoryStream(content));
-    }
+    public Task<TempFile> StoreFile(string filename, Stream contentStream, bool isUpload = false) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30), isUpload);
 
-    public Task<TempFile> StoreFile(string filename, Stream contentStream) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30));
-
-    public async Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout)
+    public async Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout, bool isUpload = false)
     {
         var tempFile = new TempFile
         {
@@ -27,40 +20,43 @@ public class TempFileSqlStorage : ITempFileStorage
             CacheTimeout = DateTime.Now.Add(timeout)
         };
 
-        await using (var connection = new SqlConnection(_connectionString))
+        await using var connection = new SqlConnection(connectionString);
+
+        await connection.OpenAsync();
+        await using (var cmd = new SqlCommand("INSERT INTO [TempFileStorage] ([Key], Filename, FileSize, IsUpload, CacheTimeout, Content) VALUES (@key, @filename, @fileSize, @isUpload, @cacheTimeout, @content)", connection))
         {
-            await connection.OpenAsync();
-            await using (var cmd = new SqlCommand("INSERT INTO [TempFileStorage] ([Key], Filename, FileSize, CacheTimeout, Content) VALUES (@key, @filename, @fileSize, @cacheTimeout, @content)", connection))
-            {
-                cmd.CommandTimeout = 600;
+            cmd.CommandTimeout = 600;
 
-                cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = tempFile.Key;
-                cmd.Parameters.Add("@filename", SqlDbType.NVarChar).Value = filename;
-                cmd.Parameters.Add("@fileSize", SqlDbType.BigInt).Value = contentStream.Length;
-                cmd.Parameters.Add("@cacheTimeout", SqlDbType.DateTime).Value = tempFile.CacheTimeout;
+            cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = tempFile.Key;
+            cmd.Parameters.Add("@filename", SqlDbType.NVarChar).Value = filename;
+            cmd.Parameters.Add("@isUpload", SqlDbType.Bit).Value = isUpload;
+            cmd.Parameters.Add("@fileSize", SqlDbType.BigInt).Value = contentStream.Length;
+            cmd.Parameters.Add("@cacheTimeout", SqlDbType.DateTime).Value = tempFile.CacheTimeout;
 
-                // Add a parameter which uses the FileStream we just opened
-                // Size is set to -1 to indicate "MAX"
-                cmd.Parameters.Add("@content", SqlDbType.Binary, -1).Value = contentStream;
+            // Add a parameter which uses the FileStream we just opened
+            // Size is set to -1 to indicate "MAX"
+            cmd.Parameters.Add("@content", SqlDbType.Binary, -1).Value = contentStream;
 
-                // Send the data to the server asynchronously  
-                await cmd.ExecuteNonQueryAsync();
+            // Send the data to the server asynchronously  
+            await cmd.ExecuteNonQueryAsync();
 
-                tempFile.FileSize = contentStream.Length;
-            }
-
-            await CleanupStorage(connection);
+            tempFile.FileSize = contentStream.Length;
         }
+
+        await CleanupStorage(connection);
 
         return tempFile;
     }
 
-    public async Task<bool> ContainsKey(string key)
+    public async Task<bool> ContainsKey(string key, bool filterUpload)
     {
-        await using var connection = new SqlConnection(_connectionString);
+        await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
-        await using var cmd = new SqlCommand("SELECT COUNT(*) FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout", connection);
+        var query = filterUpload
+            ? "SELECT COUNT(*) FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout AND [IsUpload] = 0"
+            : "SELECT COUNT(*) FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout";
+        await using var cmd = new SqlCommand(query, connection);
         cmd.Parameters.AddWithValue("key", key);
         cmd.Parameters.AddWithValue("timeout", DateTime.Now);
 
@@ -71,12 +67,15 @@ public class TempFileSqlStorage : ITempFileStorage
         return count is 1;
     }
 
-    public async Task<TempFile> GetFileInfo(string key)
+    public async Task<TempFile> GetFileInfo(string key, bool filterUpload)
     {
-        await using var connection = new SqlConnection(_connectionString);
+        await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
-        await using var cmd = new SqlCommand("SELECT [Filename], [FileSize], [CacheTimeout] FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout", connection);
+        var query = filterUpload
+            ? "SELECT [Filename], [FileSize], [IsUpload], [CacheTimeout] FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout AND [IsUpload] = 0"
+            : "SELECT [Filename], [FileSize], [IsUpload], [CacheTimeout] FROM [TempFileStorage] WHERE [Key] = @key AND [CacheTimeout] > @timeout";
+        await using var cmd = new SqlCommand(query, connection);
         cmd.Parameters.AddWithValue("key", key);
         cmd.Parameters.AddWithValue("timeout", DateTime.Now);
 
@@ -88,13 +87,15 @@ public class TempFileSqlStorage : ITempFileStorage
         {
             var filename = reader.GetString(0);
             var fileSize = reader.GetInt64(1);
-            var cacheTimeout = reader.GetDateTime(2);
+            var isUpload = reader.GetBoolean(2);
+            var cacheTimeout = reader.GetDateTime(3);
 
             tempFile = new TempFile(key)
             {
                 CacheTimeout = cacheTimeout,
                 Filename = filename,
-                FileSize = fileSize
+                FileSize = fileSize,
+                IsUpload = isUpload
             };
         }
 
@@ -106,13 +107,11 @@ public class TempFileSqlStorage : ITempFileStorage
 
     public async Task<byte[]> Download(string key)
     {
-        await using var connection = new SqlConnection(_connectionString);
+        await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
-        await using var command = new SqlCommand("SELECT [Content] FROM [TempFileStorage] WHERE [Key] = @key", connection)
-        {
-            CommandTimeout = 600
-        };
+        await using var command = new SqlCommand("SELECT [Content] FROM [TempFileStorage] WHERE [Key] = @key", connection);
+        command.CommandTimeout = 600;
 
         command.Parameters.AddWithValue("key", key);
 

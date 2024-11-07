@@ -2,21 +2,21 @@
 
 public class TempFileMemoryStorage : ITempFileStorage
 {
-    private readonly IDictionary<string, (TempFile FileInfo, byte[] Content)> _files;
+    private readonly IDictionary<string, (TempFile FileInfo, byte[] Content)> _files = new Dictionary<string, (TempFile, byte[])>();
 
-    public TempFileMemoryStorage()
-    {
-        _files = new Dictionary<string, (TempFile, byte[])>();
-    }
-
-    public Task<TempFile> StoreFile(string filename, byte[] content)
+    public Task<TempFile> StoreFile(string filename, byte[] content, bool isUpload = false)
     {
         return StoreFile(filename, new MemoryStream(content));
     }
 
-    public Task<TempFile> StoreFile(string filename, Stream contentStream) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30));
+    public Task<TempFile> StoreFile(string filename, Stream contentStream, bool isUpload = false) => StoreFile(filename, contentStream, TimeSpan.FromMinutes(30), isUpload);
 
-    public async Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout)
+    public Task<byte[]> Download(string key)
+    {
+        return Task.FromResult(_files[key].Content);
+    }
+
+    public async Task<TempFile> StoreFile(string filename, Stream contentStream, TimeSpan timeout, bool isUpload = false)
     {
         var memStream = new MemoryStream();
         await contentStream.CopyToAsync(memStream);
@@ -28,6 +28,7 @@ public class TempFileMemoryStorage : ITempFileStorage
         {
             Filename = filename,
             FileSize = fileSize,
+            IsUpload = isUpload,
             CacheTimeout = DateTime.Now.Add(timeout)
         };
 
@@ -36,19 +37,24 @@ public class TempFileMemoryStorage : ITempFileStorage
         return file;
     }
 
-    public Task<bool> ContainsKey(string key) => Task.FromResult(_files.ContainsKey(key));
+    public Task<bool> ContainsKey(string key, bool filterUpload = false)
+    {
+        return filterUpload
+            ? Task.FromResult(_files.Values.Any(f => f.FileInfo.Key == key && f.FileInfo.IsUpload == false))
+            : Task.FromResult(_files.ContainsKey(key));
+    }
 
-    public Task<TempFile> GetFileInfo(string key)
+    public Task<TempFile> GetFileInfo(string key, bool filterUpload = false)
     {
         var fileInfo = _files.TryGetValue(key, out var storedFile)
             ? storedFile.FileInfo
             : null;
 
-        return Task.FromResult(fileInfo);
-    }
+        if (filterUpload && fileInfo is { IsUpload: true })
+        {
+            return Task.FromResult<TempFile>(null);
+        }
 
-    public Task<byte[]> Download(string key)
-    {
-        return Task.FromResult(_files[key].Content);
+        return Task.FromResult(fileInfo);
     }
 }

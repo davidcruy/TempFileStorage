@@ -2,15 +2,8 @@
 
 namespace TempFileStorage;
 
-public class TempFileDownloadMiddleware
+public class TempFileDownloadMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public TempFileDownloadMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
     public async Task InvokeAsync(HttpContext context, ITempFileStorage storage)
     {
         if (context.Request.Method.Equals("GET"))
@@ -19,11 +12,11 @@ public class TempFileDownloadMiddleware
             {
                 throw new ArgumentException("TempFileStorage download key is required.");
             }
-            if (!await storage.ContainsKey(fileKeys[0]))
+            if (!await storage.ContainsKey(fileKeys[0], filterUpload: true))
             {
                 throw new InvalidOperationException("TempFileStorage download key is invalid.");
             }
-            
+
             var fileInfo = await storage.GetFileInfo(fileKeys[0]);
             var content = await storage.Download(fileKeys[0]);
 
@@ -35,6 +28,6 @@ public class TempFileDownloadMiddleware
             return;
         }
 
-        await _next(context);
+        await next(context);
     }
 }

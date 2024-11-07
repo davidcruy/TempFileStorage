@@ -36,13 +36,13 @@ public class TempFileUploadMiddleware
             while (section != null)
             {
                 // This will reparse the content disposition header
-                // Create a FileMultipartSection using it's constructor to pass
+                // Create a FileMultipartSection using its constructor to pass
                 // in a cached disposition header
                 var fileSection = section.AsFileSection();
                 if (fileSection != null)
                 {
                     var fileName = fileSection.FileName;
-                    var tempFile = await storage.StoreFile(fileName, fileSection.FileStream);
+                    var tempFile = await storage.StoreFile(fileName, fileSection.FileStream, isUpload: true);
 
                     files.Add(new FileInfo
                     {
